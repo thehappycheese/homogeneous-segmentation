@@ -1,4 +1,6 @@
-
+""" this 'fixed' version of SHS was based on the assumption that there was a typo in _cumq (n-1) instead of n.
+After speaking to the author i am pretty sure this version of the code is wrong and will be deleted in a subsequent commit.
+"""
 
 import pandas
 import numpy as np
@@ -10,18 +12,14 @@ from matplotlib import pyplot as plt
 
 def _cumq (data:npt.ArrayLike) -> npt.ArrayLike: # debug: use cumq to calculate q values along all segment points
     """Computes the Q value at each possible split index."""
-    # NOTE: In the original R package, `cum_n` is 1 item shorter than data. I am not sure if this is an error?
-    #       `cum_n` is primarily used to index `data`. I use `data[:-1]` instead of `data[cum_n]` in this port.
-    #       note that to preserve the original functionality data_left and data_right have been selected to drop one element from the data also
-    #       see _cumq_fixed below
-   
-    cum_n                = np.arange(1, len(data))  # 1:(n - 1)         # Used as denominator later ∴ Must start from 1.
-    assert len(cum_n) == len(data) -1               # this preserves original functionality though i think it is possibly an error?
+
+    cum_n                = np.arange(len(data)) + 1   # Used as denominator later ∴ Must start from 1.
+    assert len(cum_n) == len(data)
     #data_left          <- data[cum_n]
-    data_left            = data[:-1]                # or data[0:n - 1]   # Drops last
+    data_left            = data
     #data_right         <- rev(data)[cum_n]
-    data_right           = data[::-1][:-1]          # reverses and drops what was the first item of original
-    
+    data_right           = data[::-1]
+
     cum_data_left        = np.cumsum(data_left)
     cum_data_right       = np.cumsum(data_right)[::-1]
     sumd                 = np.sum(data)
@@ -68,7 +66,7 @@ def _seg2 (data:pandas.DataFrame, var:list[str], length:str, allowed_segment_len
     # contiguous sections of zero only at the start and end of the series.
     k_mask = ~np.convolve(~k_mask, np.array([True, True, True]))[1:-1]
 
-    
+
     # plt.figure()
     # (pandas.Series(k_mask,index=cumlength_left).astype("int") * 0.1).plot(color="grey", marker="x")
     # pandas.Series(cumlength_left , index=cumlength_left).plot(marker=".")
@@ -89,28 +87,21 @@ def _seg2 (data:pandas.DataFrame, var:list[str], length:str, allowed_segment_len
 
 
     qvalue_columns = []
-    for each_var in var: 
-        # the ` - 1` in the original ar code below appears to be compensating for error in _cumq. otherwise k would be able to take from beyond the end of the array returned from cumq
-        # qvalue[, i] <- _cumq(data.var[[i]])[k - 1]
+    for each_var in var:
         qvalue_columns.append(
-            # perpetuating the error described above
-            _cumq(data.loc[:,each_var].to_numpy())[k_mask[1:]]
-            # fixing the error:
-            #_cumq(data.loc[:,each_var].to_numpy())[k_mask]
+            _cumq(data.loc[:,each_var].to_numpy())[k_mask]
         )
-    
-    # qvalue = rowMeans(qvalue)
+
     qvalue     = np.mean(np.array(qvalue_columns), axis=0)
-    
+
     # This next line appears to retrieve the index of the global maximum mean q value.
     # however there is a danger that it could return a list instead of a scalar
     # # maxk <- which(qvalue == max(qvalue)) + max(k_left)
     maxk = np.flatnonzero(qvalue == np.max(qvalue)) + k[0]
-    # maxk = np.argmax(qvalue) + k[0]
     return maxk
 
 
-def shs (data:pandas.DataFrame, var:list[str], length:str, allowed_segment_length_range:tuple[float, float]) -> pandas.DataFrame:     
+def shs (data:pandas.DataFrame, var:list[str], length:str, allowed_segment_length_range:tuple[float, float]) -> pandas.DataFrame:
     """
     Spatial heterogeneity-based segmentation (SHS) for homogeneous segmentation of spatial lines data.
 
@@ -178,7 +169,7 @@ def shs (data:pandas.DataFrame, var:list[str], length:str, allowed_segment_lengt
     k2                          = np.array([*ss, len(data.index)])
     ll                          = k2 - k1
     segid                       = np.repeat(np.arange(0, len(ll)), ll)
-    
+
     data["seg.id"]              = segid + 1  # +1 for consistency with R version.
     data["seg.point"]           = 0
     data.loc[[0,*ss], "seg.point"] = 1
