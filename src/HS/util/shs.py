@@ -18,9 +18,9 @@ def _cumq (data:npt.ArrayLike) -> npt.ArrayLike: # debug: use cumq to calculate 
     cum_n                = np.arange(1, len(data))  # 1:(n - 1)         # Used as denominator later ∴ Must start from 1.
     assert len(cum_n) == len(data) -1               # this preserves original functionality though i think it is possibly an error?
     #data_left          <- data[cum_n]
-    data_left            = data[:-1]                # or data[0:n - 1]   # Drops last
+    data_left            = data[:-1]                # drops last
     #data_right         <- rev(data)[cum_n]
-    data_right           = data[::-1][:-1]          # reverses and drops what was the first item of original
+    data_right           = data[::-1][:-1]          # reverses and then drops last
     
     cum_data_left        = np.cumsum(data_left)
     cum_data_right       = np.cumsum(data_right)[::-1]
@@ -35,8 +35,8 @@ def _cumq (data:npt.ArrayLike) -> npt.ArrayLike: # debug: use cumq to calculate 
         ) / (
             np.sum(np.power(data, 2)) - sumd**2 / len(data)
         )
-    )
-
+    )    
+    
     # fig, (ax1,ax2) =  plt.subplots(2,1)
     # pandas.Series(data).plot(ax=ax1, ylabel="Q")
     # pandas.Series(result).plot(ax=ax2, ylabel="data")
