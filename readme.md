@@ -2,7 +2,7 @@
 
 This is a collection of python packages for road network segmentation.
 
-Original work by Song et al ported to python by thehappycheese.
+Currently this repo only contains one package called HS which has been ported from an R package by Song et al (see references below).
 
 ## Background
 
@@ -10,13 +10,9 @@ Segmentation refers to the spatial-linear indexing of road data to the physical 
 
 The aim of this package is to help break apart and group road segments based on multiple road condition variables and categories such that each segment can be reasonably represented by a single characteristic value.
 
-
-
 ## Code ported from R
 
-Currently this repo only contains code ported to python from R.
-
-The HS library from <https://cran.r-project.org/web/packages/HS/index.html> has been partially ported. It is published under the GPL license which I think makes this python package GPL also. The related academic paper is titled: _Spatial Heterogeneity-Based Segmentation Model for Analyzing Road Deterioration Network Data in Multi-Scale Infrastructure Systems_
+The HS library from <https://cran.r-project.org/web/packages/HS/index.html> has been partially ported. The related academic paper is titled: _Spatial Heterogeneity-Based Segmentation Model for Analyzing Road Deterioration Network Data in Multi-Scale Infrastructure Systems_
 
 Currently only the `hs()` function where `method='shs'` has been ported.
 
