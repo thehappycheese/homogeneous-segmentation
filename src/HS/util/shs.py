@@ -66,7 +66,11 @@ def _seg2 (data:pandas.DataFrame, var:list[str], length:str, allowed_segment_len
     # Since cumlength_left and cumlength_right should be monotonically increasing,
     # the bool series should have at most 3 segments, with 
     # contiguous sections of zero only at the start and end of the series.
-    k_mask = ~np.convolve(~k_mask, np.array([True, True, True]))[1:-1]
+    #   NOTE: numpy has no shift-and-fill function, so a shift based solution looks ugly: 
+    #         np.pad(k_mask, (1,0), mode="constant", constant_values=True)[:-1] & np.pad(k_mask,(0,1), mode="constant",constant_values=True)[1:]
+    #         therefore I will stick with a convolve based solution:
+    k_mask = ~np.convolve(~k_mask, np.full(3, True))[1:-1]
+    
 
     
     # plt.figure()
@@ -84,29 +88,29 @@ def _seg2 (data:pandas.DataFrame, var:list[str], length:str, allowed_segment_len
         assert len(np.split(k_mask,np.flatnonzero(k_mask[:-1] != k_mask[1:])+1)) == 3
     except AssertionError:
         # if it didnt split into 3 sections, perhaps one or two segments will not 
-        print("did no split into 3... try 1 or 2?")
+        # print("did not split into 3... try 1 or 2?")
         assert len(np.split(k_mask,np.flatnonzero(k_mask[:-1] != k_mask[1:])+1)) in {1,2}
 
 
     qvalue_columns = []
     for each_var in var: 
-        # the ` - 1` in the original ar code below appears to be compensating for error in _cumq. otherwise k would be able to take from beyond the end of the array returned from cumq
         # qvalue[, i] <- _cumq(data.var[[i]])[k - 1]
         qvalue_columns.append(
-            # perpetuating the error described above
-            _cumq(data.loc[:,each_var].to_numpy())[k_mask[1:]]
-            # fixing the error:
-            #_cumq(data.loc[:,each_var].to_numpy())[k_mask]
+            _cumq(data.loc[:,each_var].values)[k_mask[1:]]
         )
     
     # qvalue = rowMeans(qvalue)
     qvalue     = np.mean(np.array(qvalue_columns), axis=0)
     
-    # This next line appears to retrieve the index of the global maximum mean q value.
-    # however there is a danger that it could return a list instead of a scalar
-    # # maxk <- which(qvalue == max(qvalue)) + max(k_left)
+    # NOTE: This next line appears to retrieve the index of the global maximum (mean) Q value.
+    #       It IS possible that it could return a list instead of a scalar
+    #       The downstream code will split at every index in maxk without complaint.
+    #       Thats ok, BUT there is no further check that we do not create a segment shorter
+    #       than the minimum segment length.
+    #       we could fix this my using np.argmax() which will return only the first maximum.
+    #       for now I will leave this as-is so that results are compareable with the R code.
+    # maxk <- which(qvalue == max(qvalue)) + max(k_left)
     maxk = np.flatnonzero(qvalue == np.max(qvalue)) + k[0]
-    # maxk = np.argmax(qvalue) + k[0]
     return maxk
 
 
@@ -144,8 +148,12 @@ def shs (data:pandas.DataFrame, var:list[str], length:str, allowed_segment_lengt
     segid       = np.repeat(np.arange(0, len(ll)), ll)
     #segdatalist = np.split(data, segid)
 
-    # we are grouping the data wherever _seg2 found a maximum. generally there should be only a single maximum, but if there is an equal maximum at two indices, then there will be 3 groups overall.
-    segdatalist = np.split(data, np.cumsum(ll)[:-1])
+    # NOTE: We are grouping the data wherever _seg2 found a maximum Q value.
+    # Generally there should be only a single maximum, but if there
+    # is an equal maximum at two indices, then there will be more than 2 groups.
+    # in practice this should be vanishingly rare... 
+    # but in future we should come back and prevent this.
+    segdatalist:list[npt.ArrayLike] = np.split(data, np.cumsum(ll)[:-1])
 
     #lengthdata        = pandas.DataFrame([data.loc[:,length], segid], columns = ["length","seg.id"]))
     seglength_summary = data[length].groupby(segid).sum()

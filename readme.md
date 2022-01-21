@@ -2,7 +2,17 @@
 
 This is a collection of python packages for road network segmentation.
 
-Currently this repo only contains one package called HS which has been ported from an R package by Song et al (see references below).
+Currently this repo only contains one package called **HS** which has been  ported from an [R package](https://cran.r-project.org/web/packages/HS/index.html) (of the same name). The R package was originally written by Song et al (see references below). 
+
+Currently only the `hs()` function where `method='shs'` has been ported.
+
+Some tests on hand-made and real data have been implemented for the `shs` function to show that results are equivalent in R and Python.
+
+The plan is to port the entire package as closely as possible, and once that is tested, fork this repo to make additional changes to the inputs and outputs. (eg the output may be a series instead of modifying the original DataFrame by adding a '.seg.id' column)
+
+## References
+
+_Song, Yongze, Peng Wu, Daniel Gilmore, and Qindong Li. "A spatial heterogeneity-based segmentation model for analyzing road deterioration network data in multi-scale infrastructure systems." IEEE Transactions on Intelligent Transportation Systems (2020)._
 
 ## Background
 
@@ -10,16 +20,6 @@ Segmentation refers to the spatial-linear indexing of road data to the physical 
 
 The aim of this package is to help break apart and group road segments based on multiple road condition variables and categories such that each segment can be reasonably represented by a single characteristic value.
 
-## Code ported from R
 
-The HS library from <https://cran.r-project.org/web/packages/HS/index.html> has been partially ported. The related academic paper is titled: _Spatial Heterogeneity-Based Segmentation Model for Analyzing Road Deterioration Network Data in Multi-Scale Infrastructure Systems_
-
-Currently only the `hs()` function where `method='shs'` has been ported.
-
-Some tests on hand-made and real data have been implemented for the `shs` function to show that results are equivalent in R and Python.
-
-## References
-
-_Song, Yongze, Peng Wu, Daniel Gilmore, and Qindong Li. "A spatial heterogeneity-based segmentation model for analyzing road deterioration network data in multi-scale infrastructure systems." IEEE Transactions on Intelligent Transportation Systems (2020)._
 
 

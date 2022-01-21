@@ -1,5 +1,8 @@
+from deprecated import deprecated
 import pandas
 
+
+@deprecated(version="1.1.2", reason="this opperation is now embedded in the only calling function. To be removed in next version.")
 def preprocessing(data:pandas.DataFrame, var:list[str] = ["deflection"], location:str = "SLK"):
 
 	result:pandas.DataFrame = (
