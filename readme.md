@@ -1,8 +1,8 @@
-# Road Network Segmentation
+# HS - Homogeneous Segmentation
 
 This is a collection of python packages for road network segmentation.
 
-Currently this repo only contains one package called **HS** which has been  ported from an [R package called HS](https://cran.r-project.org/web/packages/HS/index.html) The R package was originally written by Song et al:
+Currently this repo only contains one package called **HS** which has been  ported from an [R package - also called HS](https://cran.r-project.org/web/packages/HS/index.html). The R package was originally Authored by **Yongze Song**:
 
 > Song, Yongze, Peng Wu, Daniel Gilmore, and Qindong Li. "A spatial heterogeneity-based segmentation model for analyzing road deterioration network data in multi-scale infrastructure systems." IEEE Transactions on Intelligent Transportation Systems (2020).
 
