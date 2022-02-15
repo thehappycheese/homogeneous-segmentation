@@ -30,6 +30,13 @@ You can use the following command to install the latest version from the main br
 pip install git+https://github.com/thehappycheese/road_seg.git#egg=HS
 ```
 
+Or check the [releases](https://github.com/thehappycheese/road_seg/releases) for specific versions.
+
+Uninstall using
+
+```bash
+pip uninstall HS
+```
 
 ## Usage
 
