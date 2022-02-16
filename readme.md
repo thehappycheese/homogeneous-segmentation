@@ -8,7 +8,7 @@ Currently this repo only contains one package called **HS** which has been  port
 
 ## Project Status
 
-Currently only the `hs()` function where `method='shs'` has been ported.
+Currently only the `homogenous_segmentation()` function where `method='shs'` has been ported.
 
 Some tests on hand-made and real data have been implemented for the `shs` function to show that results are equivalent in R and Python.
 
@@ -102,6 +102,3 @@ def test_readme_example():
 	assert (df.groupby("seg.id")["length"].sum() >= 0.030).all()
 	assert (df.groupby("seg.id")["length"].sum() <= 0.080).all()
 ```
-
-
-
