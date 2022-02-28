@@ -1,21 +1,20 @@
 import pandas as pd
 import numpy as np
-from HS.util.segment_by_category_and_slk_breaks import segment_by_category_and_slk_breaks
+
 
 
 
 
 def test_segbycat_and_slk():
-
+    from segmenter import segment_by_categories_and_slk_discontinuities
      #data[CATEGORY_COLUMN_NAME] = data.groupby(by_category).ngroup() + 1
 
     df = pd.read_csv("./test/test_data/df2.csv")
     df["original_sort_order"] = df.index
-    df = segment_by_category_and_slk_breaks(
-        df,
-        ["road","cwy","dirn"],
-        "slk_from",
-        "slk_to"
+    df["seg.ctg"] = segment_by_categories_and_slk_discontinuities(
+        data=df,
+        categories=["road","cwy","dirn"],
+        measure_slk=("slk_from", "slk_to")
     )
 
     # pretty sure the above function is fine based on manual testing, 
