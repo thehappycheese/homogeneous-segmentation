@@ -27,7 +27,7 @@ The aim of this package is to help break apart and group road segments based on 
 You can use the following command to install the latest version from the main branch
 
 ```bash
-pip install git+https://github.com/thehappycheese/road_seg.git#egg=HS
+pip install git+https://github.com/thehappycheese/HS.git#egg=HS
 ```
 
 Or check the [releases](https://github.com/thehappycheese/road_seg/releases) for specific versions.
