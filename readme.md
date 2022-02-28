@@ -1,4 +1,6 @@
-# HS - Homogeneous Segmentation
+# HS - Homogeneous Segmentation - BRANCH - Faithful Port
+
+The plan is to abandon this branch and make modifications to the API in the main branch.
 
 This is a collection of python packages for road network segmentation.
 
