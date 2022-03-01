@@ -61,6 +61,11 @@ pip uninstall HS
 ## 5. Usage
 
 ```python
+
+from HS.homogeneous_segmentation import homogenous_segmentation
+import pandas as pd
+from io import StringIO
+
 data = """road,slk_from,slk_to,cwy,deflection,dirn
 H001,0.00,0.01,L,179.37,L
 H001,0.01,0.02,L,177.12,L
@@ -99,34 +104,29 @@ H001,0.14,0.15,L,373.86,L,0.01,3,0
 H001,0.15,0.16,L,333.56,L,0.01,3,0
 """
 
-def test_readme_example():
-    from HS.homogeneous_segmentation import homogenous_segmentation
-    import pandas as pd
-    from io import StringIO
 
-    df = pd.read_csv(StringIO(data))
+result = homogenous_segmentation(
+    data                         = pd.read_csv(StringIO(data)),
+    measure                      = ("slk_from", "slk_to"),
+    variables                    = ["deflection"],
+    allowed_segment_length_range = (0.030, 0.080)
+)
 
-    df = homogenous_segmentation(
-        data                         = df,
-        measure                      = ("slk_from", "slk_to"),
-        variables                    = ["deflection"],
-        allowed_segment_length_range = (0.030, 0.080)
-    )
+expected_result          = pd.read_csv(StringIO(expected_output))
 
-    df_expected              = pd.read_csv(StringIO(expected_output))
-    df_expected["seg.id"]    = df_expected["seg.id"].astype("i4")
+# for some reason the current version outputs the seg.id column as i4 instead of i8
+# this may be something to fix later
+expected_result["seg.id"]    = expected_result["seg.id"].astype("i4")
 
-    pd.testing.assert_frame_equal(
-        left=df,
-        right=df_expected,
-        check_like=True # ignore column and row order
-    )
-    
-
-    assert "seg.id" in df.columns
-    assert "seg.point" in df.columns
+# check the result matches the expected result
+pd.testing.assert_frame_equal(
+    left       = result,
+    right      = expected_result,
+    check_like = True # ignore column and row order
+)
 
 
-    assert (df.groupby("seg.id")["length"].sum() >= 0.030).all()
-    assert (df.groupby("seg.id")["length"].sum() <= 0.080).all()
+assert "seg.id"    in result.columns
+assert "seg.point" in result.columns
+
 ```
