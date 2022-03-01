@@ -1,36 +1,56 @@
-# HS - Homogeneous Segmentation
+# HS - Homogeneous Segmentation <!-- omit in toc -->
 
-This is a collection of python packages for road network segmentation.
+- [1. Introduction](#1-introduction)
+- [2. Project Status](#2-project-status)
+- [3. Background](#3-background)
+- [4. Installation](#4-installation)
+- [5. Usage](#5-usage)
 
-Currently this repo only contains one package called **HS** which has been  ported from an [R package - also called HS](https://cran.r-project.org/web/packages/HS/index.html). The author of the original R package is **Yongze Song**, and it is related to the following paper:
+## 1. Introduction
 
-> Song, Yongze, Peng Wu, Daniel Gilmore, and Qindong Li. "[A spatial heterogeneity-based segmentation model for analyzing road deterioration network data in multi-scale infrastructure systems.](https://ieeexplore.ieee.org/document/9123684)" IEEE Transactions on Intelligent Transportation Systems (2020).
+This is a python package called **HS** which has been ported from an
+[R package - also called HS](https://cran.r-project.org/web/packages/HS/index.html).
+The author of the original R package is Yongze Song and the `HS` package is related to
+the following paper:
 
-## Project Status
+> Song, Yongze, Peng Wu, Daniel Gilmore, and Qindong Li.
+> "[A spatial heterogeneity-based segmentation model for analyzing road deterioration network data in multi-scale infrastructure systems.](https://ieeexplore.ieee.org/document/9123684)"
+> IEEE Transactions on Intelligent Transportation Systems (2020).
 
-Currently only the `homogenous_segmentation()` function where `method='shs'` has been ported.
+### 2. Project Status
 
-Some tests on hand-made and real data have been implemented for the `shs` function to show that results are equivalent in R and Python.
+The main branch includes improvements to the API. There is an abandoned branch
+that is more faithful to the original.
 
-The plan is to port the entire package as closely as possible, and once that is tested, fork / tag / branch this repo to make additional changes to the inputs and outputs. (eg the output may be a series instead of modifying the original DataFrame by adding a '.seg.id' column)
+Currently only the `homogenous_segmentation()` function where `method='shs'` has
+been ported. In v2.0.0 the option to set the `method` has been removed.
 
+Some tests on hand-made and real data have been implemented for the `shs`
+function to show that results are equivalent in R and Python.
 
-## Background
+### 3. Background
 
-Segmentation refers to the spatial-linear indexing of road data to the physical road network. Sometimes data is available at constant interval length (e.g. every 10 metres for roughness), and must be grouped into larger intervals. Sometimes data has uneven intervals (eg  local government area) and must be split and regrouped.
+Segmentation refers to the spatial-linear indexing of road data to the physical
+road network. Sometimes data is available at constant interval length (e.g.
+every 10 metres for roughness), and must be grouped into larger intervals.
+Sometimes data has uneven intervals (eg local government area) and must be split
+and regrouped.
 
-The aim of this package is to help break apart and group road segments based on multiple road condition variables and categories such that each segment can be reasonably represented by a single characteristic value.
+The aim of this package is to help break apart and group road segments based on
+multiple road condition variables and categories such that each segment can be
+reasonably represented by a single characteristic value.
 
+## 4. Installation
 
-## Installation
-
-You can use the following command to install the latest version from the main branch
+You can use the following command to install the latest version from the main
+branch
 
 ```bash
-pip install git+https://github.com/thehappycheese/HS.git#egg=HS
+pip install "https://github.com/thehappycheese/HS/zipball/main/"
 ```
 
-Or check the [releases](https://github.com/thehappycheese/road_seg/releases) for specific versions.
+Or check the [tags / releases](https://github.com/thehappycheese/HS/releases) for
+specific versions.
 
 Uninstall using
 
@@ -38,13 +58,9 @@ Uninstall using
 pip uninstall HS
 ```
 
-## Usage
+## 5. Usage
 
 ```python
-from HS.homogeneous_segmentation import homogenous_segmentation
-import pandas as pd
-from io import StringIO
-
 data = """road,slk_from,slk_to,cwy,deflection,dirn
 H001,0.00,0.01,L,179.37,L
 H001,0.01,0.02,L,177.12,L
@@ -84,21 +100,33 @@ H001,0.15,0.16,L,333.56,L,0.01,3,0
 """
 
 def test_readme_example():
-	df = pd.read_csv(StringIO(data))
+    from HS.homogeneous_segmentation import homogenous_segmentation
+    import pandas as pd
+    from io import StringIO
 
-	df = homogenous_segmentation(
-		data                        =df,
-		method                      ="shs",
-		measure_start               ="slk_from",
-		measure_end                 ="slk_to",
-		variables                   =["deflection"],
-		allowed_segment_length_range=(0.030, 0.080)
-	)
+    df = pd.read_csv(StringIO(data))
 
-	df_expected = pd.read_csv(StringIO(expected_output))
+    df = homogenous_segmentation(
+        data                         = df,
+        measure                      = ("slk_from", "slk_to"),
+        variables                    = ["deflection"],
+        allowed_segment_length_range = (0.030, 0.080)
+    )
 
-	assert df.compare(df_expected).empty
+    df_expected              = pd.read_csv(StringIO(expected_output))
+    df_expected["seg.id"]    = df_expected["seg.id"].astype("i4")
 
-	assert (df.groupby("seg.id")["length"].sum() >= 0.030).all()
-	assert (df.groupby("seg.id")["length"].sum() <= 0.080).all()
+    pd.testing.assert_frame_equal(
+        left=df,
+        right=df_expected,
+        check_like=True # ignore column and row order
+    )
+    
+
+    assert "seg.id" in df.columns
+    assert "seg.point" in df.columns
+
+
+    assert (df.groupby("seg.id")["length"].sum() >= 0.030).all()
+    assert (df.groupby("seg.id")["length"].sum() <= 0.080).all()
 ```

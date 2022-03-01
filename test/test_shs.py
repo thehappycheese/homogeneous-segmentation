@@ -1,25 +1,32 @@
 
-from re import M
-from HS.homogeneous_segmentation import homogenous_segmentation
-from util.dummy_data import df1
-
-import pandas as pd
-import os
 
 def test_shs_df1():
+    
+    from re import M
+    from HS.homogeneous_segmentation import homogenous_segmentation
+    from util.dummy_data import df1
+
+    import pandas as pd
+    import os
+
     py_output = homogenous_segmentation(
-        data   =df1,
-        method ="shs",
-        measure_start  ="slk_from",
-        measure_end    ="slk_to",
-        variables    =["var_a","var_b"],
-        allowed_segment_length_range=(0.020, 0.100)
+        data                         = df1,
+        measure                      = ("slk_from", "slk_to"),
+        variables                    = ["var_a","var_b"],
+        allowed_segment_length_range = (0.020, 0.100)
     )
     r_output = pd.read_csv("./test/r_outputs/df1_seg_test_out.csv")
     assert r_output.compare(py_output).empty
 
+
 def test_shs_df2():
 
+    from re import M
+    from HS.homogeneous_segmentation import homogenous_segmentation
+    from util.dummy_data import df1
+
+    import pandas as pd
+    import os
 
     df2 = pd.read_csv("./test/test_data/df2.csv")
 
@@ -32,11 +39,9 @@ def test_shs_df2():
     ]
 
     py_output = homogenous_segmentation(
-        measure_start = "slk_from",
-        measure_end = "slk_to",
-        variables = ["deflection"],
-        data = df2,
-        method = "shs",
+        data                         = df2,
+        measure                      = ("slk_from", "slk_to"),
+        variables                    = ["deflection"],
         allowed_segment_length_range = (0.050, 0.200)
     ).reset_index(drop=True).sort_values(by="slk_from")
     

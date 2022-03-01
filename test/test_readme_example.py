@@ -1,6 +1,4 @@
-from HS.homogeneous_segmentation import homogenous_segmentation
-import pandas as pd
-from io import StringIO
+
 
 data = """road,slk_from,slk_to,cwy,deflection,dirn
 H001,0.00,0.01,L,179.37,L
@@ -41,20 +39,32 @@ H001,0.15,0.16,L,333.56,L,0.01,3,0
 """
 
 def test_readme_example():
+	from HS.homogeneous_segmentation import homogenous_segmentation
+	import pandas as pd
+	from io import StringIO
+
 	df = pd.read_csv(StringIO(data))
 
 	df = homogenous_segmentation(
-		data                        =df,
-		method                      ="shs",
-		measure_start               ="slk_from",
-		measure_end                 ="slk_to",
-		variables                   =["deflection"],
-		allowed_segment_length_range=(0.030, 0.080)
+		data                         = df,
+		measure                      = ("slk_from", "slk_to"),
+		variables                    = ["deflection"],
+		allowed_segment_length_range = (0.030, 0.080)
 	)
 
-	df_expected = pd.read_csv(StringIO(expected_output))
+	df_expected              = pd.read_csv(StringIO(expected_output))
+	df_expected["seg.id"]    = df_expected["seg.id"].astype("i4")
 
-	assert df.compare(df_expected).empty
+	pd.testing.assert_frame_equal(
+		left=df,
+		right=df_expected,
+		check_like=True # ignore column and row order
+	)
+	
+
+	assert "seg.id" in df.columns
+	assert "seg.point" in df.columns
+
 
 	assert (df.groupby("seg.id")["length"].sum() >= 0.030).all()
 	assert (df.groupby("seg.id")["length"].sum() <= 0.080).all()

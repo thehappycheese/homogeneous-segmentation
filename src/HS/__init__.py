@@ -1,2 +1,0 @@
-from .homogeneous_segmentation import homogenous_segmentation
-from .homogeneous_segmentation import homogenous_segmentation_with_categories

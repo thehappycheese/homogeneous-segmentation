@@ -30,7 +30,7 @@ def _cumq (data:npt.ArrayLike) -> npt.ArrayLike: # debug: use cumq to calculate 
 
     result = (
         1 - (
-              ( cum_datasquare_left - cum_data_left  *  cum_data_left / cum_n      ) 
+              ( cum_datasquare_left - cum_data_left  * cum_data_left  / cum_n      ) 
             + (cum_datasquare_right - cum_data_right * cum_data_right / cum_n[::-1])
         ) / (
             np.sum(np.power(data, 2)) - sumd**2 / len(data)
