@@ -1,10 +1,11 @@
 # HS - Homogeneous Segmentation <!-- omit in toc -->
 
 - [1. Introduction](#1-introduction)
-- [2. Project Status](#2-project-status)
-- [3. Background](#3-background)
-- [4. Installation](#4-installation)
-- [5. Usage](#5-usage)
+  - [1.1. Project Status](#11-project-status)
+  - [1.2. Background](#12-background)
+    - [1.2.1. Relevance for Austorads Pavement](#121-relevance-for-austorads-pavement)
+- [2. Installation](#2-installation)
+- [3. Usage](#3-usage)
 
 ## 1. Introduction
 
@@ -17,7 +18,7 @@ the following paper:
 > "[A spatial heterogeneity-based segmentation model for analyzing road deterioration network data in multi-scale infrastructure systems.](https://ieeexplore.ieee.org/document/9123684)"
 > IEEE Transactions on Intelligent Transportation Systems (2020).
 
-### 2. Project Status
+### 1.1. Project Status
 
 The main branch includes improvements to the API. There is an abandoned branch
 that is more faithful to the original.
@@ -28,7 +29,7 @@ been ported. In v2.0.0 the option to set the `method` has been removed.
 Some tests on hand-made and real data have been implemented for the `shs`
 function to show that results are equivalent in R and Python.
 
-### 3. Background
+### 1.2. Background
 
 Segmentation refers to the spatial-linear indexing of road data to the physical
 road network. Sometimes data is available at constant interval length (e.g.
@@ -40,7 +41,24 @@ The aim of this package is to help break apart and group road segments based on
 multiple road condition variables and categories such that each segment can be
 reasonably represented by a single characteristic value.
 
-## 4. Installation
+#### 1.2.1. Relevance for Austroads Pavement
+
+Austroads "Guide to Pavement Technology Part 5: Pavement Evaluation and
+Treatment Design"
+[AGPT05-19](https://austroads.com.au/publications/pavement/agpt05) section
+`9.2.5 Selection of Homogeneous Sections` recommends
+
+- Homogenous Sections should be longer than 100 metres
+- Homogenous Sections should have a coefficient of variation (standard deviation
+  divided by the mean) no greater than 0.25 to be considered homogeneous
+
+`AGPT05-19 Section 9.2.5` recommends the use of the cumulative difference
+approach outlined in `Appendix D` of the same document to identify Homogeneous
+Sections for the design of pavement overlays.
+
+In the research paper mentioned in the introduction of this readme, this method was evaluated against the cumulative difference approach outlined in `AGPT05-19 Appendix D`.
+
+## 2. Installation
 
 You can use the following command to install the latest version from the main
 branch
@@ -58,7 +76,7 @@ Uninstall using
 pip uninstall HS
 ```
 
-## 5. Usage
+## 3. Usage
 
 ```python
 
