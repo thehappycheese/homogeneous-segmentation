@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "homogeneous-segmentation"
-version = "2.0.2"
+version = "2.0.3"
 authors = [
     { name = "Yongze Song", role="author of original R package named HS" },
     { name = "Nicholas Archer", role = "port to python / maintainer" }
