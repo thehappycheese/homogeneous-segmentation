@@ -1,6 +1,6 @@
 
 def test_readme_example():
-	from HS.homogeneous_segmentation import homogenous_segmentation
+	from homogeneous_segmentation import spatial_heterogeneity_segmentation
 	import pandas as pd
 	from io import StringIO
 
@@ -43,7 +43,7 @@ def test_readme_example():
 	"""
 
 
-	result = homogenous_segmentation(
+	result = spatial_heterogeneity_segmentation(
 		data                         = pd.read_csv(StringIO(data)),
 		measure                      = ("slk_from", "slk_to"),
 		variables                    = ["deflection"],

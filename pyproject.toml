@@ -1,13 +1,35 @@
 [build-system]
-requires = [
-  "setuptools >= 40.9.0",
-  "wheel",
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "homogeneous-segmentation"
+version = "2.0.2"
+authors = [
+    { name = "Yongze Song", role="author of original R package named HS" },
+    { name = "Nicholas Archer", role = "port to python / maintainer" }
 ]
-build-backend = "setuptools.build_meta"
+license = "GPL-2.0-only"
+description = "Methods for homogenous segmentation of linear spatial data, such as pavement performance indicators and traffic volumes. One of the three original methods has been ported; the spatial heterogeneity based method. The original R package also implmented the cumulative difference approach, and a method to minimization coefficient of variation"
+readme = "readme.md"
+
+dependencies = [
+    "pandas"
+]
+requires-python = ">=3.9"
+
+[project.urls]
+"Homepage" = "https://github.com/thehappycheese/homogeneous_segments"
+"Original R Package" = "https://cran.r-project.org/web/packages/HS/index.html"
+
+[project.optional-dependencies]
+dev = [
+    "pytest"
+]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "7.0"
 addopts = "-ra -q --tb=short"
 testpaths = [
-  "test"
+  "tests"
 ]
