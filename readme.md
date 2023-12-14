@@ -1,5 +1,11 @@
 # HS - Homogeneous Segmentation <!-- omit in toc -->
 
+Methods for homogenous segmentation of linear spatial data, such as pavement
+performance indicators and traffic volumes. THis python package contains one of
+the three original methods in the R package named HS; the spatial heterogeneity
+based method. The original R package also implemented the cumulative difference
+approach, and a method to minimization coefficient of variation.
+
 - [1. Introduction](#1-introduction)
   - [1.1. Project Status](#11-project-status)
   - [1.2. Background](#12-background)
@@ -64,23 +70,14 @@ You can use the following command to install the latest version from the main
 branch
 
 ```bash
-pip install "https://github.com/thehappycheese/HS/zipball/main/"
+pip install homogeneous-segmentation
 ```
 
-Or check the [tags / releases](https://github.com/thehappycheese/HS/releases) for
-specific versions.
-
-Uninstall using
-
-```bash
-pip uninstall HS
-```
 
 ## 3. Usage
 
 ```python
-
-from HS.homogeneous_segmentation import homogenous_segmentation
+from homogeneous_segmentation import spatial_heterogeneity_segmentation
 import pandas as pd
 from io import StringIO
 
@@ -123,7 +120,7 @@ H001,0.15,0.16,L,333.56,L,0.01,3,0
 """
 
 
-result = homogenous_segmentation(
+result = spatial_heterogeneity_segmentation(
     data                         = pd.read_csv(StringIO(data)),
     measure                      = ("slk_from", "slk_to"),
     variables                    = ["deflection"],
@@ -132,7 +129,7 @@ result = homogenous_segmentation(
 
 expected_result          = pd.read_csv(StringIO(expected_output))
 
-# for some reason the current version outputs the seg.id column as i4 instead of i8
+# for some reason the current version outputs the seg.id as i4 instead of i8
 # this may be something to fix later
 expected_result["seg.id"]    = expected_result["seg.id"].astype("i4")
 
