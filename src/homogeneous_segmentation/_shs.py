@@ -1,10 +1,16 @@
-import pandas
+"""
+This is a private module containing the implementation of the Spatial Heterogeneity-based Segmentation (SHS) method including supporting methods `q_cumulative`.
+Only the method `spatial_heterogeneity_segmentation` is exposed to the user. The other methods are not intended to be used directly.
+"""
+
+from typing import Optional
+import pandas as pd
 import numpy as np
 import numpy.typing as npt
-from typing import Optional
+from ._optimal_bisections import optimal_bisections
 #from matplotlib import pyplot as plt
 
-def cumq (data:npt.ArrayLike) -> npt.ArrayLike: # debug: use cumq to calculate q values along all segment points
+def q_cumulative (data:npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     """ Computes the cumulative Q-statistic for each potential split index in an array.
 
     The Q-statistic is a measure that quantifies the importance of each variable by
@@ -29,21 +35,19 @@ def cumq (data:npt.ArrayLike) -> npt.ArrayLike: # debug: use cumq to calculate q
         data (npt.ArrayLike): An array-like object containing the data points for which the Q values are to be computed.
 
     Returns:
-        npt.ArrayLike: An array of the same length as 'data', containing the computed Q values for each potential split point.
+        npt.ArrayLike: An array of the same length as 'data', containing the computed Q values for each potential split
+        point.
     """
 
-    # NOTE: In the original R package, `cum_n` is 1 item shorter than `data``. I am not sure if this is an error?
-    #       `cum_n` is primarily used to index `data`. I use `data[:-1]` instead of `data[cum_n]` in this port.
-    #       note that to preserve the original functionality data_left and data_right have been selected to drop one element from the data also
-    #       see _cumq_fixed below
-   
     cum_n                = np.arange(1, len(data))  # 1:(n - 1)         # Used as denominator later ∴ Must start from 1.
-    assert len(cum_n) == len(data) -1               # this preserves original functionality though i think it is possibly an error?
+    # This next line ensures that we have preserved the original functionality; that cum_n is 1 item shorter than data
+    # (Possibly it is an error, or maybe it is intended that part of the math )
+    assert len(cum_n) == len(data) -1               
     #data_left          <- data[cum_n]
     data_left            = data[:-1]                # drops last
     #data_right         <- rev(data)[cum_n]
     data_right           = data[::-1][:-1]          # reverses and then drops last
-    
+
     cum_data_left        = np.cumsum(data_left)
     cum_data_right       = np.cumsum(data_right)[::-1]
     sumd                 = np.sum(data)
@@ -55,102 +59,19 @@ def cumq (data:npt.ArrayLike) -> npt.ArrayLike: # debug: use cumq to calculate q
               ( cum_datasquare_left - cum_data_left  * cum_data_left  / cum_n      ) 
             + (cum_datasquare_right - cum_data_right * cum_data_right / cum_n[::-1])
         ) / (
-            np.sum(np.power(data, 2)) - sumd**2 / len(data)
+            np.sum(np.power(data, 2)) - sumd**2.0 / len(data)
         )
-    )    
-    
-    # fig, (ax1,ax2) =  plt.subplots(2,1)
-    # pandas.Series(data).plot(ax=ax1, ylabel="Q")
-    # pandas.Series(result).plot(ax=ax2, ylabel="data")
+    )
 
     return result
 
 
-def seg2 (data:pandas.DataFrame, var:list[str], length:str, allowed_segment_length_range:tuple[float, float]) -> list[int]:
-    """
-    Bisects the given data at the index of maximum Q value, calculated from the '_cumq' function.
-
-    This function is used for finding the optimal split point in the data, based on the maximum Q value.
-    It considers the allowed segment length range and operates on specified variables.
-
-    Args:
-        data (pandas.DataFrame): The DataFrame containing the data to be segmented.
-        var (list[str]): A list of column names in 'data' that are to be used for segmentation.
-        length (str): The column name in 'data' that represents the length of each segment.
-        allowed_segment_length_range (tuple[float, float]): A tuple indicating the minimum and maximum allowed lengths for each segment.
-
-    Returns:
-        list[int]: A list of indices in 'data' where the maximum Q values are found, indicating optimal split points.
-    """
-
-    min_length, _max_length = allowed_segment_length_range
-
-    data_var        = data[var]
-    data_length     = data[length]
-
-    cumlength_left  = np.cumsum(data[length].to_numpy())
-    cumlength_right = np.cumsum(data[length].to_numpy()[::-1])[::-1]
-    
-    k_mask = ~ (
-          (cumlength_left  <= min_length)
-        | (cumlength_right <= min_length)
-    )
-
-    # to match the behaviour of the R script we must expand the false values
-    # in the array by one index either side;
-    # the bool series 001111000 is modified to 0001100000
-    # Since cumlength_left and cumlength_right should be monotonically increasing,
-    # the bool series should have at most 3 segments, with
-    # contiguous sections of zero only at the start and end of the series.
-    #   NOTE: numpy has no shift-and-fill function, so a shift based solution looks ugly:
-    #         np.pad(k_mask, (1,0), mode="constant", constant_values=True)[:-1] & np.pad(k_mask,(0,1), mode="constant",constant_values=True)[1:]
-    #         therefore I will stick with a convolve based solution:
-    k_mask = ~np.convolve(~k_mask, np.full(3, True))[1:-1]
-    
-
-    
-    # plt.figure()
-    # (pandas.Series(k_mask,index=cumlength_left).astype("int") * 0.1).plot(color="grey", marker="x")
-    # pandas.Series(cumlength_left , index=cumlength_left).plot(marker=".")
-    # pandas.Series(cumlength_right, index=cumlength_left).plot(marker=".")
-    # plt.axhline(min_length)
-
-
-    k = np.flatnonzero(k_mask)
-    
-    try:
-        # confirm that k_mask splits the data into three portions
-        # this appears to be assumed in the R package?
-        assert len(np.split(k_mask,np.flatnonzero(k_mask[:-1] != k_mask[1:])+1)) == 3
-    except AssertionError:
-        # if it didn't split into 3 sections, perhaps one or two segments will not 
-        # print("did not split into 3... try 1 or 2?")
-        assert len(np.split(k_mask,np.flatnonzero(k_mask[:-1] != k_mask[1:])+1)) in {1,2}
-
-
-    qvalue_columns = []
-    for each_var in var: 
-        # qvalue[, i] <- _cumq(data.var[[i]])[k - 1]
-        qvalue_columns.append(
-            cumq(data.loc[:,each_var].values)[k_mask[1:]]
-        )
-    
-    # qvalue = rowMeans(qvalue)
-    qvalue     = np.mean(np.array(qvalue_columns), axis=0)
-    
-    # NOTE: This next line appears to retrieve the index of the global maximum (mean) Q value.
-    #       It IS possible that it could return a list instead of a scalar
-    #       The downstream code will split at every index in maxk without complaint.
-    #       Thats ok, BUT there is no further check that we do not create a segment shorter
-    #       than the minimum segment length.
-    #       we could fix this my using np.argmax() which will return only the first maximum.
-    #       for now I will leave this as-is so that results are compareable with the R code.
-    # maxk <- which(qvalue == max(qvalue)) + max(k_left)
-    maxk = np.flatnonzero(qvalue == np.max(qvalue)) + k[0]
-    return maxk
-
-
-def shs(data:pandas.DataFrame, var:list[str], length:str, allowed_segment_length_range:tuple[float, float]) -> pandas.DataFrame:
+def shs(
+        data                         : pd.DataFrame,
+        variable_column_names        : list[str],
+        length_column_name           : str,
+        allowed_segment_length_range : tuple[float, float]
+    ) -> npt.NDArray[np.int64]:
     """
     Spatial Heterogeneity-based Segmentation (SHS) for homogeneous segmentation of linear spatial data.
 
@@ -174,14 +95,20 @@ def shs(data:pandas.DataFrame, var:list[str], length:str, allowed_segment_length
     min_length, max_length = allowed_segment_length_range
 
     # first segmentation
-    ss          = seg2(data, var, length, allowed_segment_length_range)
+    ss          = optimal_bisections(
+        variables                  = data.loc[:, variable_column_names].values.transpose(),
+        length                     = data[length_column_name].values,
+        minimum_segment_length     = min_length,
+        cumulative_split_statistic = q_cumulative,
+        goal                       = "max",
+    )
     #ss = np.array([3,5])
     # following segmentation
     k1          = np.array([0, *ss])
     k2          = np.array([*ss, len(data.index)])
-    ll          = k2 - k1
-    cum_ll      = np.append(np.array([0]), np.cumsum(ll))
-    segid       = np.repeat(np.arange(0, len(ll)), ll)
+    ll          = k2 - k1 # integer length of arrays on each side of split
+    split_boundaries      = np.append(0, np.cumsum(ll)) # split boundaries, including 0 and len(data.index)
+    segid       = np.repeat(np.arange(0, len(ll)), ll) # segment id for each row of data
     #segdatalist = np.split(data, segid)
 
     # NOTE: We are grouping the data wherever _seg2 found a maximum Q value.
@@ -189,59 +116,61 @@ def shs(data:pandas.DataFrame, var:list[str], length:str, allowed_segment_length
     # is an equal maximum at two indices, then there will be more than 2 groups.
     # in practice this should be vanishingly rare... 
     # but in future we should come back and prevent this.
-    segdatalist:list[npt.ArrayLike] = np.split(data, np.cumsum(ll)[:-1])
+    data_grouped_by_seg = data.groupby(segid)
+    segdatalist:list[pd.DataFrame] = [group for _ ,group in data.groupby(segid)]
 
     #lengthdata        = pandas.DataFrame([data.loc[:,length], segid], columns = ["length","seg.id"]))
-    seglength_summary = data[length].groupby(segid).sum()
+    seglength_summary = data_grouped_by_seg[length_column_name].sum()
 
     seglength         = seglength_summary.round(10).values
-    k = np.flatnonzero(seglength > max_length)
+    k = np.flatnonzero(seglength > max_length).astype(np.int64)
 
     while(len(k) > 0):
-        sa = [seg2(segdatalist[x], var, length, allowed_segment_length_range) + cum_ll[x] for x in k]
-        ss = np.sort(np.concatenate([ss, *sa]))
-
-        k1          = np.array([0, *ss])
-        k2          = np.array([*ss, len(data.index)])
-        ll          = k2 - k1
-        cum_ll      = np.append(np.array([0]), np.cumsum(ll))
-        segid       = np.repeat(np.arange(0, len(ll)), ll)
+        sa = [
+            optimal_bisections(
+                variables                  = segdatalist[x].loc[:,variable_column_names].values.transpose(),
+                length                     = segdatalist[x][length_column_name].values,
+                minimum_segment_length     = min_length,
+                cumulative_split_statistic = q_cumulative,
+                goal                       = "max",
+            )
+            +
+            split_boundaries[x]
+            for x
+            in k
+        ]
+        ss               = np.sort(np.concatenate([ss, *sa]))
+        k1               = np.array([0, *ss])
+        k2               = np.array([*ss, len(data.index)])
+        ll               = k2 - k1
+        split_boundaries = np.append(np.array([0]), np.cumsum(ll))
+        segid            = np.repeat(np.arange(0, len(ll)), ll)
         #segdatalist = np.split(data, segid)
 
         # we are grouping the data wherever _seg2 found a maximum. generally there should be only a single maximum,
         # but if there is an equal maximum at two indices, then there will be 3 groups overall.
-        segdatalist = np.split(data, np.cumsum(ll)[:-1])
+        segdatalist:list[pd.DataFrame] = [group for _ ,group in data.groupby(segid)]
 
         #lengthdata        = pandas.DataFrame([data.loc[:,length], segid], columns = ["length","seg.id"]))
-        seglength_summary = data[length].groupby(segid).sum()
+        seglength_summary = data[length_column_name].groupby(segid).sum()
 
         seglength         = seglength_summary.round(10).values
-        k = np.flatnonzero(seglength > max_length)
+        k                 = np.flatnonzero(seglength > max_length)
     
     # # add seg.id
     k1                          = np.array([0, *ss])
     k2                          = np.array([*ss, len(data.index)])
     ll                          = k2 - k1
-    segid                       = np.repeat(np.arange(0, len(ll)), ll)
-    
-    data["seg.id"]              = segid + 1  # +1 for consistency with R version.
-    data["seg.point"]           = 0
-    data.loc[[0,*ss], "seg.point"] = 1
+    segid                       = np.repeat(np.arange(0, len(ll), dtype=np.int64), ll)
 
-    return data
+    return segid + 1
 
-
-# TODO: this function wraps the shs function...
-#       This follows the structure used in the R package,
-#       but these two functions could be merged in the future.
 def spatial_heterogeneity_segmentation(
-        data:pandas.DataFrame,
+        data:pd.DataFrame,
         measure:tuple[str, str], 
         variables:list[str], 
         allowed_segment_length_range:Optional[tuple[float, float]] = None,
-        segment_id_column_name = "seg.id",
-        length_column_name = "length"
-    ):
+    )->pd.Series:
     """
     Homogeneous segmentation function for continuous variables, using Spatial Heterogeneity Segmentation (SHS) method.
     Modifies the input DataFrame and returns it with a column "seg.id"
@@ -273,6 +202,8 @@ def spatial_heterogeneity_segmentation(
 
     measure_start, measure_end = measure
 
+    original_index = data.index
+
     # preprocessing
     data = (
         data
@@ -282,17 +213,26 @@ def spatial_heterogeneity_segmentation(
     )
 
     # add length # remove system errors of small data
-    data[length_column_name] = (data[measure_end] - data[measure_start]).round(decimals=10)
+    data["___length___"] = (data[measure_end] - data[measure_start]).round(decimals=10).values
 
     if allowed_segment_length_range is None:
         allowed_segment_length_range = (
-            data[length_column_name].min(),
-            data[length_column_name].sum()
+            data["___length___"].min(),
+            data["___length___"].sum()
         )
 
-    if data[length_column_name].sum() <= allowed_segment_length_range[1]:
-        data[segment_id_column_name] = 1
+    if data["___length___"].sum() <= allowed_segment_length_range[1]:
+        return pd.Series(
+            data = np.ones(len(data.index), dtype=np.int64),
+            index = data.index,
+        )
     else:	
-        data = shs(data, var = variables, length = length_column_name, allowed_segment_length_range = allowed_segment_length_range)
-
-    return data
+        return pd.Series(
+            index = original_index,
+            data  = shs(
+                data                         = data,
+                variable_column_names        = variables,
+                length_column_name           = "___length___",
+                allowed_segment_length_range = allowed_segment_length_range,
+            )
+        )
