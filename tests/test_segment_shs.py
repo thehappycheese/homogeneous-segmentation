@@ -2,7 +2,7 @@ from io import StringIO
 import pandas as pd
 import numpy as np
 from homogeneous_segmentation import segment_ids_to_maximize_spatial_heterogeneity_segmentation
-from homogeneous_segmentation._shs import cumulative_q
+from homogeneous_segmentation._seg_shs import cumulative_q
 import pytest
 
 
