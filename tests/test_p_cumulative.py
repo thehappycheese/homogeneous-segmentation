@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from homogeneous_segmentation._cumulative_p import cumulative_p
 
 @pytest.mark.parametrize("input, expected", [
     (
@@ -12,6 +13,6 @@ import pytest
     )
 ])
 def test_p_cumulative(input, expected):
-    from homogeneous_segmentation._mvc import p_cumulative
-    result = p_cumulative(np.array(input))
+    
+    result = cumulative_p(np.array(input))
     assert np.allclose(result, np.array(expected), equal_nan=True)

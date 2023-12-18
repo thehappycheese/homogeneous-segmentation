@@ -2,8 +2,8 @@ from io import StringIO
 import pandas as pd
 import numpy as np
 from homogeneous_segmentation._optimal_bisections import optimal_bisections
-from homogeneous_segmentation._shs import q_cumulative
-from homogeneous_segmentation._mvc import p_cumulative
+from homogeneous_segmentation._cumulative_q import cumulative_q
+from homogeneous_segmentation._cumulative_p import cumulative_p
 
 def test_optimal_bisections_max_q_cumulative():
     data = pd.read_csv(StringIO("""road,slk_from,slk_to,cwy,deflection,dirn
@@ -29,7 +29,7 @@ def test_optimal_bisections_max_q_cumulative():
         variables                  = [data["deflection"].values],
         length                     = (data["slk_to"] - data["slk_from"]).values,
         minimum_segment_length     = 0.030,
-        cumulative_split_statistic = q_cumulative,
+        cumulative_split_statistic = cumulative_q,
         goal                       = "max"
     )
     assert actual_result[0] == expected_result
@@ -60,7 +60,7 @@ def test_optimal_bisections_min_p_cumulative():
         variables                  = [data["deflection"].values],
         length                     = (data["slk_to"] - data["slk_from"]).values,
         minimum_segment_length     = 0.030,
-        cumulative_split_statistic = p_cumulative,
+        cumulative_split_statistic = cumulative_p,
         goal                       = "min"
     )
     assert actual_result[0] == expected_result

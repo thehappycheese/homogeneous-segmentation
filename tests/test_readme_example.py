@@ -5,7 +5,7 @@ therefore imports are made inside the functions and not at the top of the file.
 # pylint: disable=missing-function-docstring, import-outside-toplevel
 
 def test_readme_example():
-    from homogeneous_segmentation import spatial_heterogeneity_segmentation
+    from homogeneous_segmentation import segment_ids_to_maximize_spatial_heterogeneity_segmentation
     import pandas as pd
     from io import StringIO
 
@@ -48,10 +48,10 @@ def test_readme_example():
     """
 
     df = pd.read_csv(StringIO(data))
-    df["seg.id"] = spatial_heterogeneity_segmentation(
+    df["seg.id"] = segment_ids_to_maximize_spatial_heterogeneity_segmentation(
         data                         = df,
         measure                      = ("slk_from", "slk_to"),
-        variables                    = ["deflection"],
+        variable_column_names                    = ["deflection"],
         allowed_segment_length_range = (0.030, 0.080)
     )
 

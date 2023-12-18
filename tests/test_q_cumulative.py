@@ -1,4 +1,4 @@
-from homogeneous_segmentation._shs import q_cumulative
+from homogeneous_segmentation._cumulative_q import cumulative_q
 import numpy as np
 
 def test_q_cumulative():
@@ -12,5 +12,5 @@ def test_q_cumulative():
         0.40606724, 0.55653928, 0.62684644, 0.55570908, 0.60795648, 0.70864689,
         0.79360021, 0.60877663, 0.19950557,
     ])
-    python_output = q_cumulative(input)
+    python_output = cumulative_q(input)
     assert np.allclose(python_output, r_output, atol=1e-8)

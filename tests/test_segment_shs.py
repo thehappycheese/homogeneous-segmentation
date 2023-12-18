@@ -1,8 +1,8 @@
 from io import StringIO
 import pandas as pd
 import numpy as np
-from homogeneous_segmentation import spatial_heterogeneity_segmentation
-from homogeneous_segmentation._shs import q_cumulative
+from homogeneous_segmentation import segment_ids_to_maximize_spatial_heterogeneity_segmentation
+from homogeneous_segmentation._shs import cumulative_q
 import pytest
 
 
@@ -30,10 +30,10 @@ df1 = pd.read_csv(StringIO(""""var_a","var_b","slk_from","slk_to"
 
 def test_shs_df1():
     result = df1.copy()
-    result["seg.id"] = spatial_heterogeneity_segmentation(
+    result["seg.id"] = segment_ids_to_maximize_spatial_heterogeneity_segmentation(
         data                         = result,
         measure                      = ("slk_from", "slk_to"),
-        variables                    = ["var_a","var_b"],
+        variable_column_names                    = ["var_a","var_b"],
         allowed_segment_length_range = (0.020, 0.100),
     )
     expected_output = pd.read_csv(StringIO(""""var_a","var_b","slk_from","slk_to","seg.id"
@@ -74,10 +74,10 @@ def test_shs_df2():
     ]
 
     py_output = df2
-    py_output["seg.id"] = spatial_heterogeneity_segmentation(
+    py_output["seg.id"] = segment_ids_to_maximize_spatial_heterogeneity_segmentation(
         data                         = df2,
         measure                      = ("slk_from", "slk_to"),
-        variables                    = ["deflection"],
+        variable_column_names                    = ["deflection"],
         allowed_segment_length_range = (0.050, 0.200)
     )
     py_output = py_output.sort_values(by="slk_from").reset_index(drop=True)
@@ -86,7 +86,6 @@ def test_shs_df2():
         pd.read_csv("./tests/R_Outputs/df2_seg_test_out.csv")
         .reset_index(drop=True)
         .sort_values(by="slk_from")
-        .drop(columns=["length","seg.point"])
     )
 
     pd.testing.assert_frame_equal(
@@ -96,7 +95,7 @@ def test_shs_df2():
 
 @pytest.mark.parametrize("data", [df1["var_a"].values, df1["var_b"].values])
 def test_q_cumulative(data):
-    result = q_cumulative(data)
+    result = cumulative_q(data)
     result_slow = []
     divisor = np.var(data) * len(data)
     for index in range(1, len(data)):
