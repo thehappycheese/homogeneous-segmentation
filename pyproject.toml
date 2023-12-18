@@ -33,3 +33,6 @@ addopts = "-ra -q --tb=short"
 testpaths = [
   "tests"
 ]
+
+[tool.pylint]
+max-line-length = 120
