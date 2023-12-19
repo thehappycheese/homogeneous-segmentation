@@ -9,14 +9,14 @@ from ._cumulative_p import cumulative_p
 
 
 def segment_ids_to_minimize_coefficient_of_variation(
-        data:pd.DataFrame,
-        measure:tuple[str, str],
-        variable_column_names:list[str],
-        allowed_segment_length_range:Optional[tuple[float, float]] = None,
-    )->pd.Series:
+        data                         : pd.DataFrame,
+        measure                      : tuple[str, str],
+        variable_column_names        : list[str],
+        allowed_segment_length_range : Optional[tuple[float, float]] = None,
+    ) -> pd.Series:
     """
-    Homogeneous segmentation function for continuous variables, aiming to 'Minimum Coefficient of Variation' (MCV)
-    within segments.
+    Homogeneous segmentation function for continuous variables, aiming to 'Minimise Coefficient of Variation' (MCV)
+    within selected segments.
     """
 
     LENGTH_COLUMN_NAME = "___length___"

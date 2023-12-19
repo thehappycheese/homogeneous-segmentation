@@ -1,7 +1,7 @@
 from io import StringIO
 import pandas as pd
 import numpy as np
-from homogeneous_segmentation import segment_ids_to_maximize_spatial_heterogeneity_segmentation
+from homogeneous_segmentation import segment_ids_to_maximize_spatial_heterogeneity
 from homogeneous_segmentation._seg_shs import cumulative_q
 import pytest
 
@@ -30,7 +30,7 @@ df1 = pd.read_csv(StringIO(""""var_a","var_b","slk_from","slk_to"
 
 def test_shs_df1():
     result = df1.copy()
-    result["seg.id"] = segment_ids_to_maximize_spatial_heterogeneity_segmentation(
+    result["seg.id"] = segment_ids_to_maximize_spatial_heterogeneity(
         data                         = result,
         measure                      = ("slk_from", "slk_to"),
         variable_column_names                    = ["var_a","var_b"],
@@ -74,7 +74,7 @@ def test_shs_df2():
     ]
 
     py_output = df2
-    py_output["seg.id"] = segment_ids_to_maximize_spatial_heterogeneity_segmentation(
+    py_output["seg.id"] = segment_ids_to_maximize_spatial_heterogeneity(
         data                         = df2,
         measure                      = ("slk_from", "slk_to"),
         variable_column_names                    = ["deflection"],

@@ -9,7 +9,7 @@ from ._optimal_bisections import optimal_bisections
 from ._cumulative_q import cumulative_q
 
 
-def segment_ids_to_maximize_spatial_heterogeneity_segmentation(
+def segment_ids_to_maximize_spatial_heterogeneity(
         data:pd.DataFrame,
         measure:tuple[str, str],
         variable_column_names:list[str],
@@ -50,7 +50,6 @@ def segment_ids_to_maximize_spatial_heterogeneity_segmentation(
         .sort_values(by=measure_start)
         .reset_index(drop=True)
     )
-
 
     # add length # remove system errors of small data
     data[LENGTH_COLUMN_NAME] = (data[measure_end] - data[measure_start]).round(decimals=10).values
@@ -93,14 +92,13 @@ def segment_ids_to_maximize_spatial_heterogeneity_segmentation(
     # is an equal maximum at two indices, then there will be more than 2 groups.
     # in practice this should be vanishingly rare... 
     # but in future we should come back and prevent this.
-    data_grouped_by_seg = data.groupby(segment_id)
+    data_grouped_by_seg                           = data.groupby(segment_id)
     data_grouped_by_segment_id:list[pd.DataFrame] = [group for _ ,group in data.groupby(segment_id)]
 
     # lengthdata        = pandas.DataFrame([data.loc[:,length], segid], columns = ["length","seg.id"]))
     segment_length_summary = data_grouped_by_seg[LENGTH_COLUMN_NAME].sum()
-
     segment_length         = segment_length_summary.round(10).values
-    k = np.flatnonzero(segment_length > max_allowed_length)
+    k                      = np.flatnonzero(segment_length > max_allowed_length)
 
     while(len(k) > 0):
         sa = [
@@ -121,7 +119,7 @@ def segment_ids_to_maximize_spatial_heterogeneity_segmentation(
         k2               = np.array([*ss, len(data.index)])
         ll               = k2 - k1
         split_boundaries = np.append(np.array([0]), np.cumsum(ll))
-        segment_id            = np.repeat(np.arange(0, len(ll)), ll)
+        segment_id       = np.repeat(np.arange(0, len(ll)), ll)
         # segdatalist = np.split(data, segid)
 
         # we are grouping the data wherever _seg2 found a maximum. generally there should be only a single maximum,
@@ -130,9 +128,8 @@ def segment_ids_to_maximize_spatial_heterogeneity_segmentation(
 
         # lengthdata        = pandas.DataFrame([data.loc[:,length], segid], columns = ["length","seg.id"]))
         segment_length_summary = data[LENGTH_COLUMN_NAME].groupby(segment_id).sum()
-
         segment_length         = segment_length_summary.round(10).values
-        k                 = np.flatnonzero(segment_length > max_allowed_length)
+        k                      = np.flatnonzero(segment_length > max_allowed_length)
     
     # # add seg.id
     k1                          = np.array([0, *ss])

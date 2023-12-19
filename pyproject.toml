@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "homogeneous-segmentation"
-version = "2.0.3"
+version = "2.1.0"
 authors = [
     { name = "Yongze Song", role="author of original R package named HS" },
     { name = "Nicholas Archer", role = "port to python / maintainer" }
 ]
 license = "GPL-2.0-only"
-description = "Methods for homogenous segmentation of linear spatial data, such as pavement performance indicators and traffic volumes. One of the three original methods has been ported; the spatial heterogeneity based method. The original R package also implmented the cumulative difference approach, and a method to minimization coefficient of variation"
+description = "Methods for homogenous segmentation of linear spatial data, such as pavement performance indicators and traffic volumes. Two of the three original methods have been ported; the spatial heterogeneity based segmentation, and the Minimise Coefficient of Variation segmentation. The original R package also implmented the cumulative difference approach and a number of associated functions not ported to thise package."
 readme = "readme.md"
 
 dependencies = [

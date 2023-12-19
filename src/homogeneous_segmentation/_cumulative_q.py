@@ -39,25 +39,23 @@ def cumulative_q (data:npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     # This next line ensures that we have preserved the original functionality; that cum_n is 1 item shorter than data
     # (Possibly it is an error, or maybe it is intended that part of the math )
     assert len(cum_n) == len(data) - 1
-    #data_left          <- data[cum_n]
-    data_left            = data[:-1]                # drops last
-    #data_right         <- rev(data)[cum_n]
-    data_right           = data[::-1][:-1]          # reverses and then drops last
+
+    data_left            = data[:-1]     # drops last
+    data_right           = data [:0 :-1] # reverses and then drops last
 
     cum_data_left        = np.cumsum(data_left      )
     cum_data_right       = np.cumsum(data_right     )[::-1]
     sumd                 = np.sum   (data           )
     cum_datasquare_left  = np.cumsum(data_left  ** 2)
     cum_datasquare_right = np.cumsum(data_right ** 2)[::-1]
-
+    #with np.errstate(invalid='ignore', divide='ignore'):
     result = (
         1 - (
-              ( cum_datasquare_left - cum_data_left  * cum_data_left  / cum_n      ) 
+            ( cum_datasquare_left - cum_data_left  * cum_data_left  / cum_n      ) 
             + (cum_datasquare_right - cum_data_right * cum_data_right / cum_n[::-1])
         ) / (
             np.sum(np.power(data, 2)) - sumd**2.0 / len(data)
         )
     )
-
     return result
 
